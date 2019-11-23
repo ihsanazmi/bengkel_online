@@ -7,6 +7,7 @@ import Home from './Home'
 import Login from './Login'
 import Register from './Register'
 import EditProfile from './EditProfile'
+import Cart from './cart'
 // import Footer from './Footer'
 
 import {keepLogin} from '../actions/index'
@@ -40,6 +41,7 @@ export class App extends Component {
                             <Route path ="/register" component = {Register}/>
                             <Route path ="/login" component = {Login}/>
                             <Route path = "/edit" component={EditProfile}/>
+                            <Route path = "/cart" component={Cart}/>
                             {/* <Footer/> */}
                         </div>
                     </BrowserRouter>

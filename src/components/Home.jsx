@@ -5,6 +5,8 @@ import product2 from '../img/spring.png'
 import Footer from './Footer'
 import axios from '../config/axios'
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
+import moment from 'moment'
+import { connect } from 'react-redux'
 
 
 class Home extends Component {
@@ -16,6 +18,8 @@ class Home extends Component {
         service: [],
         value_service: 0,
         value_sparepart: 0,
+        harga_sparepart: 0,
+        harga_service: 0
     }
 
     componentDidMount(){
@@ -29,6 +33,7 @@ class Home extends Component {
             this.setState({
                 service: res.data
             })
+            console.log(res.data)
         })
         .catch(err=>{
             console.log(err)
@@ -56,10 +61,62 @@ class Home extends Component {
     }
 
     buySparepart = ()=>{
-        // let user_id = this.props.id
-        // let sparepart_id = this.state.value_sparepart
-
+        if(!this.props.id){
+            this.setState({modal_sparepart: !this.state.modal_sparepart})
+            return alert('Silahkan login terlebih dahulu')
+        }
+        let user_id = this.props.id
+        let product_id = this.state.value_sparepart
+        let qty = parseInt(this.qty.value)
+        let harga = this.state.harga_sparepart
+        let total = qty * harga
+        let created_at = new Date()
+        created_at = moment(created_at).format('YYYY-MM-DD HH-mm-ss')
+        // alert(qty)
+        axios.post(`/product/cart/${product_id}`, {user_id, product_id, qty, total, created_at})
+        .then(res=>{
+            alert('Berhasil masuk ke keranjang')
+            // console.log(res.data)
+            this.setState({
+                value_sparepart: 0,
+                harga_sparepart: 0,
+                modal_sparepart: !this.state.modal_sparepart
+            })
+        })
+        .catch(err=>{
+            console.log(err)
+        })
     }
+
+    buyService = ()=>{
+        if(!this.props.id){
+            this.setState({modal_sparepart: !this.state.modal_sparepart})
+            return alert('Silahkan login terlebih dahulu')
+        }
+        let user_id = this.props.id
+        let product_id = this.state.value_service
+        let qty = 1
+        let harga = parseInt(this.state.harga_service)
+        let total = qty * harga
+        let created_at = new Date()
+        created_at = moment(created_at).format('YYYY-MM-DD HH-mm-ss')
+        // alert(harga)
+
+        axios.post(`/product/cart/${product_id}`, {user_id, product_id, qty, total, created_at})
+        .then(res=>{
+            alert('Berhasil masuk ke keranjang')
+            // console.log(res.data)
+            this.setState({
+                value_service: 0,
+                harga_service: 0,
+                modal_service: !this.state.modal_service
+            })
+        })
+        .catch(err=>{
+            console.log(err)
+        })
+    }
+    
 
     openModalService = ()=>{
         this.setState({modal_service:!this.state.modal_service})
@@ -69,18 +126,42 @@ class Home extends Component {
         this.setState({modal_service: !this.state.modal_service})
     }
 
-    buyService = ()=>{
-
-    }
+    
 
     renderOptionService = ()=>{
         let option = this.state.service.map(service=>{
             return(
             <option key={service.id} value={service.id}>{service.product}</option>
             )
+            
         })
         // console.log(option)
         return option
+    }
+
+    onOptionSparepartChange = (e)=>{
+        this.setState({value_sparepart: e})
+        axios.get(`/product/hargaSparepart/${e}`)
+        .then(res=>{
+            this.setState({harga_sparepart: res.data[0].harga})
+            console.log(res.data[0].harga)
+        })
+        .catch(err=>{
+            console.log(err)
+        })
+    }
+
+    onOptionServiceChange = (e)=>{
+        this.setState({value_service: e})
+        // console.log(e)
+        axios.get(`/product/hargaService/${e}`)
+        .then(res=>{
+            this.setState({harga_service: res.data[0].harga})
+            console.log(res.data[0].harga)
+        })
+        .catch(err=>{
+            console.log(err)
+        })
     }
 
     renderOptionSparepart = ()=>{
@@ -176,13 +257,12 @@ class Home extends Component {
                     <ModalHeader toggle={this.toggle_sparepart_exit}>Pilih Sparepart</ModalHeader>
                     <ModalBody>
                         
-                        <label htmlFor="nama">Email</label>
-                        <select className="form-control mt-3" value={this.state.value_sparepart} onChange={(e)=>this.setState({value_sparepart: e.target.value })}>
+                        <select className="form-control mt-3" value={this.state.value_sparepart} onChange={(e)=>this.onOptionSparepartChange(e.target.value)}>
                             <option value="">-Pilih Sparepart-</option>
                             {this.renderOptionSparepart()}
                         </select>
-                        <label htmlFor="qty">Quantity</label>
-                        <input ref={(input)=>{this.qty = input}} id="qty" type="text" className="form-control"/>
+                        <label className="mt-3" htmlFor="qty">Quantity</label>
+                        <input ref={(input)=>{this.qty = input}} id="qty" type="number" className="form-control"/>
 
                     </ModalBody>
                     <ModalFooter>
@@ -196,7 +276,7 @@ class Home extends Component {
                         
                         
                         <label htmlFor="nama">Jenis Service</label>
-                        <select className="form-control mt-3" value={this.state.value_service} onChange={(e)=>this.setState({value_service: e.target.value })}>
+                        <select className="form-control mt-3" value={this.state.value_service} onChange={(e)=>this.onOptionServiceChange(e.target.value)}>
                             <option value="">-Pilih Service-</option>
                             {this.renderOptionService()}
                         </select>
@@ -212,4 +292,10 @@ class Home extends Component {
     }
 }
 
-export default Home
+const mapStateToProps = (state)=>{
+    return {
+        id: state.auth.id
+    }
+}
+
+export default connect(mapStateToProps) (Home)
