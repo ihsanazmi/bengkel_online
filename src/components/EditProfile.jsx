@@ -64,7 +64,7 @@ class EditProfile extends Component {
     
     
     render() {
-        if(this.state.userProfile){
+        if(this.props.id){
             // console.log(this.state.userProfile)
             if(!isNull(this.state.userProfile)){
                 let {nama, email, no_hp} = this.state.userProfile[0]
