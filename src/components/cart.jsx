@@ -20,7 +20,7 @@ class cart extends Component {
     }
 
     getGrandTotal = ()=>{
-        axios.get('/cart/getGrandTotal')
+        axios.get(`/cart/getGrandTotal/${this.props.id}`)
         .then(res=>{
             this.setState({
                 grandTotal: parseInt(res.data[0].grand_total)
@@ -33,7 +33,7 @@ class cart extends Component {
     }
 
     getCart = ()=>{
-        axios.get('/getCart')
+        axios.get(`/getCart/${this.props.id}`)
         .then(res=>{
             this.setState({
                 carts: res.data
